@@ -70,38 +70,64 @@ class AnimateBridge2D:
         plt.close()
         return ani
 
-class AnimateStats:
+class AnimateBeamRotation:
     
-    def __init__(self, angles):
-
+    '''
+    Animate the rotation of all the beams of a bridge
+    '''
+    
+    def __init__(self, angles, beam_length):
+        
         self.angles = angles
-        self.fig, self.ax = plt.subplots(figsize=(15,6))
+        self.fig, self.ax = plt.subplots(figsize=(15,6), nrows=1, ncols=2)
+        # construct beams:
+        self.len = beam_length
+        self.beams = [self.make_beam() for _ in range(4)]
+                
         self.colors = ["red", "blue", "green", "orange"]
+        
+    def make_beam(self):
+        b0 = LineString([(0,0), (self.len, 0)])
+        return b0
         
     def init(self):
         pass
 
     def update(self, i):
-        self.ax.cla()
+        
         i = int(i)
         current_angles = self.angles[i,:] ## Current angle
+        
+        self.ax[1].cla()
         bp = 0.01 ## Bar plot constant
         norm_angles = current_angles-current_angles.min() + bp
         min_a, max_a = norm_angles.min(), norm_angles.max()
-        
-        self.ax.bar(["B1", "B2", "B3", "B4"], norm_angles, color=self.colors, width=0.5)        
-        
-        rects = self.ax.patches
+
+        self.ax[1].bar([f"Beam {x}" for x in range(4)], norm_angles, color=self.colors, width=0.5)        
+
+        rects = self.ax[1].patches
         for i,(norm_ang, ang, rect) in enumerate(zip(norm_angles, current_angles, rects)):
             height = rect.get_height()
-            self.ax.text(x=i,y=height*1.05, s=f"{ang:.4f}", horizontalalignment='center', fontsize=12)
-        self.ax.set_xlabel("beam rotation")
-        self.ax.set_label("angle")
-        self.ax.set_yticks([], [])
-        
+            self.ax[1].text(x=i,y=height*1.05, s=f"{ang:.4f}" + u"\N{DEGREE SIGN}", horizontalalignment='center', fontsize=12)
+        self.ax[1].set_xlabel("beam rotation")
+        self.ax[1].set_label("angle")
+        self.ax[1].set_yticks([], [])         
+
         for side in ["left", "right", "top"]:   
-            self.ax.spines[side].set_visible(False)
-                        
+            self.ax[1].spines[side].set_visible(False)
+        
+        ## Animate the beams:
+        self.ax[0].cla()
+        for j, curr_ang in enumerate(current_angles):   
+            b1 = affinity.rotate(self.beams[j], angle=curr_ang, origin=(0,0))
+            x1,y1 = np.array(b1.coords.xy)
+            self.ax[0].plot(x1, y1, color=self.colors[j], label=f"Beam {j+1}: {curr_ang:.4f}" + u"\N{DEGREE SIGN}")
+            self.ax[0].legend(title="Beam rotations:", loc="upper left")
+            self.ax[0].set_ylim(0,self.len)
+            self.ax[0].set_xlim(0,self.len)
+            self.ax[0].axis("off")
+        
+        
         return self.fig 
     
     def animate(self, interval=300, frames=None):
@@ -111,5 +137,3 @@ class AnimateStats:
         ani = animation.FuncAnimation(self.fig, self.update, frames=frames, init_func=self.init, interval=interval)
         plt.close()
         return ani
-
-
