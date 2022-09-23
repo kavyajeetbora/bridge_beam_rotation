@@ -9,4 +9,4 @@ Bascule bridge:
 
 Feeding the data to the program will output:
 
-<img src="https://raw.githubusercontent.com/kavyajeetbora/bridge_beam_rotation/master/beam_rotation.gif"/>
+<img src="https://user-images.githubusercontent.com/38955297/191929840-eab535b2-7868-4daf-8b7b-4a6c7091afa9.gif"/>
